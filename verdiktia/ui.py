@@ -44,3 +44,29 @@ def render_canvas(subquestions: Dict[str, List[str]]) -> None:
             for i, sq in enumerate(subs, 1):
                 st.markdown(f"**{i}.** {sq}")
             st.text_input(f"Responde aquí sobre «{root}»", key=f"resp_{root}")
+# en verdiktia/ui.py (al final del módulo)
+
+from graphviz import Digraph
+from typing import Dict, List
+
+def render_reasoning_graph(subquestions: Dict[str, List[str]]) -> None:
+    """
+    Dibuja un grafo dirigido donde cada pregunta raíz conecta
+    con sus sub-preguntas.
+    """
+    dot = Digraph(
+        name="ReasoningGraph",
+        format="svg",
+        graph_attr={"rankdir": "LR", "splines": "ortho"}
+    )
+    # crea nodos y aristas
+    for root, subs in subquestions.items():
+        dot.node(root, label=root, shape="box", style="filled", fillcolor="lightblue")
+        for sq in subs:
+            dot.node(sq, label=sq, shape="ellipse")
+            dot.edge(root, sq)
+
+    # renderiza en la UI
+    import streamlit as st
+    st.subheader("Grafo de razonamiento")
+    st.graphviz_chart(dot.source)
