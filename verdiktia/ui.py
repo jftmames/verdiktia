@@ -32,3 +32,14 @@ def render_results(ranked: List[Tuple[str, int]]) -> None:
     for nombre, score in ranked[:2]:
         st.write(f"**{nombre}** — Puntuación: {score}/500")
         st.caption(f"Nivel de confianza: {int(score/500*100)} %")
+# verdiktia/ui.py (añadir al final)
+
+from typing import Dict, List
+
+def render_canvas(subquestions: Dict[str, List[str]]) -> None:
+    st.subheader("Diagnóstico Inicial (Canvas)")
+    for root, subs in subquestions.items():
+        with st.expander(root):
+            for i, sq in enumerate(subs, 1):
+                st.markdown(f"**{i}.** {sq}")
+            st.text_input(f"Responde aquí sobre «{root}»", key=f"resp_{root}")
