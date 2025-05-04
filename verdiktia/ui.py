@@ -70,3 +70,16 @@ def render_reasoning_graph(subquestions: Dict[str, List[str]]) -> None:
     import streamlit as st
     st.subheader("Grafo de razonamiento")
     st.graphviz_chart(dot.source)
+# al final de verdiktia/ui.py
+
+from typing import Dict, List
+
+def render_adaptations(adaptations: Dict[str, List[str]]) -> None:
+    """Muestra las recomendaciones de adaptación."""
+    import streamlit as st
+
+    st.subheader("Recomendaciones de Adaptación")
+    for root, recs in adaptations.items():
+        with st.expander(f"Ajustes para «{root}»"):
+            for i, r in enumerate(recs, 1):
+                st.markdown(f"{i}. {r}")

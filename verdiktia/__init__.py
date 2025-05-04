@@ -9,3 +9,10 @@ __all__ = [
     "render_inputs", "render_weights", "render_results",
     "InquiryEngine",
 ]
+ from .inquiry import InquiryEngine
++from .adaptation import AdaptationEngine
+
+ __all__ = [
+     ...,
++    "AdaptationEngine",
+ ]
