@@ -1,7 +1,8 @@
 import streamlit as st
 from verdiktia import ui, data, logic
-from verdiktia.inquiry import InquiryEngine
+from verdiktia.inquiry    import InquiryEngine
 from verdiktia.adaptation import AdaptationEngine
+from verdiktia.expansion  import ExpansionEngine
 
 def main():
     # Configuración de la página
@@ -35,11 +36,17 @@ def main():
         adaptations = adapt_engine.generate_adaptations(canvas_answers, profile)
         ui.render_adaptations(adaptations)
 
-    # 5) Ranking de mercados
+    # 5) Ranking de mercados y 6) Plan de escalado
     if st.button("Generar recomendación de mercados"):
+        # Ranking
         countries = data.get_countries()
-        ranked = logic.rank_countries(profile, countries, weights)
+        ranked    = logic.rank_countries(profile, countries, weights)
         ui.render_results(ranked)
+
+        # Plan de escalado (Uppsala)
+        exp_engine = ExpansionEngine(api_key=st.secrets.get("OPENAI_API_KEY"))
+        plan       = exp_engine.generate_plan(ranked, profile, top_n=3)
+        ui.render_expansion_plan(plan)
 
 if __name__ == "__main__":
     main()
