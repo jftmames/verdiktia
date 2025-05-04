@@ -32,6 +32,7 @@ def render_results(ranked: List[Tuple[str, int]]) -> None:
     for nombre, score in ranked[:2]:
         st.write(f"**{nombre}** — Puntuación: {score}/500")
         st.caption(f"Nivel de confianza: {int(score/500*100)} %")
+
 # verdiktia/ui.py (añadir al final)
 
 from typing import Dict, List
