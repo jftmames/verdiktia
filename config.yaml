@@ -1,0 +1,9 @@
+# config.yaml
+weights:
+  crecimiento: 25
+  saturacion: 20
+  aranceles: 20
+  logistica: 15
+  cultural: 10
+  certificados: 5
+  idioma: 5
