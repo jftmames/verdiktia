@@ -1,42 +1,41 @@
 # verdiktia/logic.py
---- a/verdiktia/logic.py
-+++ b/verdiktia/logic.py
-@@
--from yaml import safe_load
-+import yaml
- from pathlib import Path
--from typing import Dict, List, Tuple
-+from typing import Union, Dict, List, Tuple
+from __future__ import annotations
+import yaml
+from pathlib import Path
+from typing import Union, Dict, List, Tuple
 
--def load_weights(path: Path | str = "config.yaml") -> Dict[str,int]:
-+def load_weights(path: Union[Path, str] = "config.yaml") -> Dict[str,int]:
-     """Carga los pesos desde el YAML de configuración."""
-     cfg = yaml.safe_load(Path(path).read_text())
-     return cfg.get("weights", {})
+def load_weights(path: Union[Path, str] = "config.yaml") -> Dict[str, int]:
+    """Carga los pesos desde el YAML de configuración."""
+    cfg = yaml.safe_load(Path(path).read_text())
+    return cfg.get("weights", {})
 
+def score_country(profile: Dict, country: Dict, weights: Dict[str, int]) -> int:
+    """Calcula puntuación ponderada para un país dado un perfil de empresa y pesos dinámicos."""
+    score = 0
+    score += country.get("crecimiento", 0) * weights.get("crecimiento", 0)
+    score += (5 - country.get("saturacion", 5)) * weights.get("saturacion", 0)
+    score += (5 - country.get("aranceles", 5)) * weights.get("aranceles", 0)
+    score += country.get("logistica", 0) * weights.get("logistica", 0)
 
-def score_country(profile: Dict, country: Dict, weights: Dict[str,int]) -> int:
-    score  = country["crecimiento"] * weights["crecimiento"]
-    score += (5 - country["saturacion"]) * weights["saturacion"]
-    score += (5 - country["aranceles"]) * weights["aranceles"]
-    score += country["logistica"] * weights["logistica"]
+    if country.get("cultural") in profile.get("preferencias_geo", []):
+        score += weights.get("cultural", 0)
 
-    if country["cultural"] in profile["preferencias_geo"]:
-        score += weights["cultural"]
+    if set(profile.get("certificaciones", [])) & set(country.get("certificados", [])):
+        score += weights.get("certificados", 0)
 
-    if set(profile["certificaciones"]) & set(country["certificados"]):
-        score += weights["certificados"]
-
-    if country["idioma"] in profile["idiomas"]:
-        score += weights["idioma"]
+    if country.get("idioma") in profile.get("idiomas", []):
+        score += weights.get("idioma", 0)
 
     return score
 
 def rank_countries(
-    profile: Dict, countries: List[Dict], weights: Dict[str,int]
-) -> List[Tuple[str,int]]:
+    profile: Dict,
+    countries: List[Dict],
+    weights: Dict[str, int]
+) -> List[Tuple[str, int]]:
+    """Devuelve arreglo ordenado de tuplas (nombre, puntuación)."""
     ranked = [
-        (c["nombre"], score_country(profile, c, weights))
+        (c.get("nombre", ""), score_country(profile, c, weights))
         for c in countries
     ]
     ranked.sort(key=lambda x: x[1], reverse=True)
