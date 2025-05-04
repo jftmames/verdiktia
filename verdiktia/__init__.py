@@ -1,5 +1,4 @@
 # verdiktia/__init__.py
-
 from .data import get_countries
 from .logic import load_weights, score_country, rank_countries
 from .ui import render_inputs, render_weights, render_results
