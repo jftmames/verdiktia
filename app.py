@@ -19,17 +19,13 @@ def main():
         "¿Tengo una propuesta de valor clara para el mercado internacional?",
         "¿Conozco mis canales de distribución en destino?",
     ]
-    subqs = {
-        q: engine.generate_subquestions(q)
-        for q in canvas_questions
-    }
+    subqs = {q: engine.generate_subquestions(q) for q in canvas_questions}
 
     # 3) Renderizado del Canvas y grafo de razonamiento
     ui.render_canvas(subqs)
     ui.render_reasoning_graph(subqs)
 
     # 4) Adaptaciones
-    # Recoge las respuestas del usuario al Canvas
     canvas_answers = {
         q: st.session_state.get(f"resp_{q}", "")
         for q in canvas_questions
