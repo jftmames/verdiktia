@@ -35,16 +35,16 @@ Este MVP se basa en una arquitectura cognitiva de IA deliberativa descrita en lo
 ## 🛠 Estructura del repositorio
 
 verdiktia/
-├── init.py
-├── app.py # Punto de entrada principal
-├── ui.py # Renderizado de inputs, canvas, grafo y resultados
-├── data.py # Carga de datos de países y factores
-├── logic.py # Lógica de ranking por pesos
-├── inquiry.py # Generación de subpreguntas con IA
-├── adaptation.py # Motor de recomendaciones adaptativas
-├── expansion.py # Generación de plan de expansión internacional
-├── config.yaml # Configuración de pesos por defecto
-└── requirements.txt # Dependencias del proyecto
+- ├── init.py
+- ├── app.py # Punto de entrada principal
+- ├── ui.py # Renderizado de inputs, canvas, grafo y resultados
+- ├── data.py # Carga de datos de países y factores
+- ├── logic.py # Lógica de ranking por pesos
+- ├── inquiry.py # Generación de subpreguntas con IA
+- ├── adaptation.py # Motor de recomendaciones adaptativas
+- ├── expansion.py # Generación de plan de expansión internacional
+- ├── config.yaml # Configuración de pesos por defecto
+- └── requirements.txt # Dependencias del proyecto
 
 
 
