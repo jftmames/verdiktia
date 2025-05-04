@@ -83,11 +83,12 @@ def render_adaptations(adaptations: Dict[str, List[str]]) -> None:
         with st.expander(f"Ajustes para «{root}»"):
             for i, r in enumerate(recs, 1):
                 st.markdown(f"{i}. {r}")
-def render_expansion_plan(plan: List[str]) -> None:
-    """Muestra el plan faseado de entrada a mercados."""
+def render_expansion_plan(plan: str) -> None:
+    """Muestra el plan faseado de entrada a mercados como markdown."""
     import streamlit as st
 
     st.subheader("Plan de Implementación y Escalado")
+    st.markdown(plan)
     current_phase = ""
     for line in plan:
         if line.lower().startswith("fase"):
