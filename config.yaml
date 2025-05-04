@@ -1,4 +1,3 @@
-# config.yaml
 weights:
   crecimiento: 25
   saturacion: 20
