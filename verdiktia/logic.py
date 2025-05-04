@@ -1,11 +1,19 @@
 # verdiktia/logic.py
-import yaml
-from pathlib import Path
-from typing import Dict, List, Tuple
+--- a/verdiktia/logic.py
++++ b/verdiktia/logic.py
+@@
+-from yaml import safe_load
++import yaml
+ from pathlib import Path
+-from typing import Dict, List, Tuple
++from typing import Union, Dict, List, Tuple
 
-def load_weights(path: Path | str = "config.yaml") -> Dict[str,int]:
-    cfg = yaml.safe_load(Path(path).read_text())
-    return cfg.get("weights", {})
+-def load_weights(path: Path | str = "config.yaml") -> Dict[str,int]:
++def load_weights(path: Union[Path, str] = "config.yaml") -> Dict[str,int]:
+     """Carga los pesos desde el YAML de configuración."""
+     cfg = yaml.safe_load(Path(path).read_text())
+     return cfg.get("weights", {})
+
 
 def score_country(profile: Dict, country: Dict, weights: Dict[str,int]) -> int:
     score  = country["crecimiento"] * weights["crecimiento"]
