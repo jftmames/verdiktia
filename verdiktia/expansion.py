@@ -1,35 +1,50 @@
 # verdiktia/expansion.py
-import openai
+
+import os
+from openai import OpenAI
+from typing import List, Tuple, Dict
 
 class ExpansionEngine:
-    def __init__(self, api_key: str):
-        self.api_key = api_key
-        openai.api_key = api_key
+    """Genera un plan de entrada faseado a mercados según el modelo Uppsala."""
 
-    def generate_plan(self, ranked, profile, top_n=3) -> str:
+    def __init__(self, api_key: str | None = None, model: str = "gpt-4o-mini"):
+        self.client = OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
+        self.model = model
+
+    def generate_plan(
+        self,
+        ranked: List[Tuple[str, float]],
+        profile: Dict,
+        top_n: int = 3
+    ) -> str:
         """
-        ranked: lista de tuplas (country_name, score)
-        profile: dict con datos del perfil de la empresa
-        top_n: cuántos mercados tomar para el plan
+        Toma los primeros top_n países del ranking (lista de (nombre, score))
+        y genera un plan en 3 fases con 2 acciones cada una.
+        Devuelve el texto completo de la respuesta.
         """
+        # Construir prompt
         prompt = (
-            "Genera un plan de expansión de mercado para la empresa con este perfil:\n"
+            "Eres un consultor experto en internacionalización y aplicarás "
+            "el modelo Uppsala. La empresa tiene este perfil:\n"
             f"{profile}\n\n"
-            "Prioriza estos mercados:\n"
+            "Y ha priorizado estos mercados:\n"
         )
-        # Desempaquetar correctamente la tupla (nombre, score)
-        for idx, entry in enumerate(ranked[:top_n], start=1):
-            country, score = entry  # entry = (nombre, score)
+        for idx, (country, score) in enumerate(ranked[:top_n], start=1):
             prompt += f"{idx}. {country} (score={score:.1f})\n"
 
-        # Llamada a la API de ChatCompletion
-        resp = openai.ChatCompletion.create(
-            model="gpt-4-mini",
-            messages=[
-                {"role": "system", "content": "Eres un asistente generador de planes de expansión."},
-                {"role": "user", "content": prompt},
-            ],
-            temperature=0.7,
+        prompt += (
+            "\nDescribe un plan en 3 fases:\n"
+            "Fase 1: entrada piloto en el mercado 1 (2 acciones).\n"
+            "Fase 2: expansión al mercado 2 (2 acciones).\n"
+            "Fase 3: consolidación en el mercado 3 (2 acciones).\n"
+            "Responde como lista numerada por fases y acciones."
         )
-        plan = resp.choices[0].message.content
-        return plan
+
+        # Llamada a la API con el nuevo cliente
+        resp = self.client.chat.completions.create(
+            model=self.model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=400
+        )
+        return resp.choices[0].message.content.strip()
