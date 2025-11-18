@@ -5,39 +5,69 @@ import pandas as pd
 from typing import List, Dict
 from .data_providers import (
     WorldBankProvider,
-    UNComtradeProvider,
-    GoogleMarketFinderProvider,
+    UnescoStudentProvider,
+    VisaDifficultyProvider,
 )
 
-def get_countries(year: int = 2023) -> List[Dict]:
-    """Recupera indicadores de distintos proveedores y los unifica en el formato esperado."""
+def get_countries(year: int = 2024) -> List[Dict]:
+    """Recupera indicadores académicos y demográficos para el análisis de admisiones."""
     wb = WorldBankProvider()
-    un = UNComtradeProvider()
-    gm = GoogleMarketFinderProvider()
+    unesco = UnescoStudentProvider()
+    visa = VisaDifficultyProvider()
 
-    # 1) Trae crecimiento (gdp_growth)
-    df_growth = wb.fetch_indicators(["gdp_growth"], year)
-    # 2) Trae saturación de mercado
-    df_sat    = un.fetch_indicators(["market_saturation"], year)
-    # 3) Trae tamaño de mercado
-    df_size   = gm.fetch_indicators(["market_size"], year)
+    # 1) Datos económicos (Poder adquisitivo para matrículas)
+    # Usamos 'poder_adquisitivo' (GDP per capita PPP)
+    df_eco = wb.fetch_indicators(["poder_adquisitivo"], year)
 
-    # 4) Merge por ISO
-    df = df_growth.merge(df_sat, on="iso", how="left")
-    df = df.merge(df_size, on="iso", how="left")
+    # 2) Datos demográficos y de movilidad estudiantil
+    df_student = unesco.fetch_indicators(["demografia_joven", "movilidad_outbound"], year)
+
+    # 3) Datos burocráticos y culturales (Visados e Idioma)
+    df_visa = visa.fetch_indicators(["facilidad_visado", "afinidad_idioma"], year)
+
+    # 4) Merge progresivo por ISO (Left join partiendo de la lista de estudiantes UNESCO)
+    df = df_student.merge(df_eco, on="iso", how="left")
+    df = df.merge(df_visa, on="iso", how="left")
+    
+    # Rellenar valores nulos
     df = df.fillna(0)
 
-    # 5) Genera la lista de dicts en el formato que espera logic.py
+    # Gestión del nombre del país (priorizamos el nombre en español de WB si existe)
+    if "nombre" not in df.columns and "nombre_unesco" in df.columns:
+        df["nombre"] = df["nombre_unesco"]
+    elif "nombre" in df.columns:
+        # Si hay huecos en 'nombre' de WB, usamos el de Unesco
+        df["nombre"] = df["nombre"].fillna(df.get("nombre_unesco", ""))
+
+    # 5) Genera la lista de dicts en el formato esperado por logic.py
     countries = []
     for _, row in df.iterrows():
+        # Normalización de métricas grandes para el sistema de pesos (target: escala 0-10)
+        
+        # Poder adquisitivo: 50,000 USD -> ~5 puntos
+        gdp_val = float(row.get("poder_adquisitivo", 0))
+        score_poder = min(gdp_val / 10000, 10)
+        
+        # Movilidad (Outbound): 50,000 estudiantes -> ~5 puntos
+        mob_val = float(row.get("movilidad_outbound", 0))
+        score_interes = min(mob_val / 10000, 10)
+
+        # Demografía joven (viene en 0-1) -> pasar a 0-10
+        score_demo = float(row.get("demografia_joven", 0)) * 10
+
         countries.append({
-            "nombre":        row["nombre"],
-            "crecimiento":   float(row["gdp_growth"]),
-            "saturacion":    float(row["market_saturation"]) * 5,  # reescalamos a 0–5
-            "aranceles":     0,                                    # por defecto
-            "logistica":     0,                                    # por defecto
-            "cultural":      "",                                   # rellénalo luego
-            "certificados":  [],                                   # idem
-            "idioma":        "",                                   # idem
+            "nombre":               row["nombre"],
+            
+            # Métricas clave normalizadas
+            "poder_adquisitivo":    score_poder,
+            "demografia_joven":     score_demo,
+            "interes_espana":       score_interes,   # Proxy basado en volumen de movilidad
+            "facilidad_visado":     float(row.get("facilidad_visado", 0)), # Escala 1-5 original
+            "afinidad_idioma":      float(row.get("afinidad_idioma", 0)),  # Escala 1-5 original
+            
+            # Placeholders para lógica futura
+            "convenios_existentes": 0, 
+            "seguridad":            5,
         })
+    
     return countries
