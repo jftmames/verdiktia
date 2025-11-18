@@ -43,8 +43,10 @@ def render_weights() -> Dict[str, int]:
 def render_results(ranked: List[Tuple[str, float]]) -> None:
     # CAMBIO: Semántica de "Mercados de Origen"
     st.subheader("Mercados de Origen Recomendados")
-    for nombre, score in ranked[:2]:
-        st.write(f"**{nombre}** — Puntuación: {score:.1f}/500")
+    
+    # Mostrar el ranking de países y su puntuación
+    for i, (nombre, score) in enumerate(ranked[:3]): # Mostramos los 3 principales
+        st.markdown(f"**{i+1}. {nombre}** — Puntuación: {score:.1f}/500")
         st.caption(f"Nivel de confianza: {int(score/500*100)} %")
 
 
