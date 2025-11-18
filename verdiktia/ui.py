@@ -11,17 +11,21 @@ from graphviz import Digraph
 
 
 def render_inputs() -> Dict[str, Any]:
-    st.header("Datos de tu empresa")
+    # CAMBIO: Título adaptado al contexto universitario
+    st.header("Perfil del Programa Académico")
+    
+    # CAMBIO: Nuevos inputs relevantes para captación de alumnos
     return dict(
-        producto         = st.selectbox("Producto", ["Aceite de oliva", "Vino", "Fruta eco"]),
-        certificaciones  = st.multiselect("Certificaciones", ["BIO", "IFS", "BRC", "D.O."]),
-        preferencias_geo = st.multiselect("Preferencias geográficas", ["UE", "LatAm", "MENA", "Asia"]),
-        idiomas          = st.multiselect("Idiomas en el equipo", ["Inglés", "Francés", "Alemán"]),
+        tipo_programa      = st.selectbox("Tipo de Programa", ["Grado (Bachelors)", "Máster Universitario", "Doctorado", "Cursos de Español"]),
+        area_conocimiento  = st.selectbox("Área de Conocimiento", ["Ingeniería y Arquitectura", "Ciencias de la Salud", "Humanidades", "Ciencias Sociales", "Ciencias"]),
+        idioma_imparticion = st.selectbox("Idioma de Impartición", ["Español", "Inglés", "Bilingüe"]),
+        recursos_becas     = st.select_slider("Disponibilidad de Becas", options=["Nula", "Baja", "Media", "Alta"]),
     )
 
 
 def render_weights() -> Dict[str, int]:
     st.subheader("Ajusta la importancia de cada factor")
+    # Nota: Recuerda actualizar 'config.yaml' con las claves nuevas (demografia, visados, etc.)
     cfg = yaml.safe_load(Path("config.yaml").read_text())
     default = cfg.get("weights", {})
     weights: Dict[str, int] = {}
@@ -37,14 +41,16 @@ def render_weights() -> Dict[str, int]:
 
 
 def render_results(ranked: List[Tuple[str, float]]) -> None:
-    st.subheader("Países recomendados")
+    # CAMBIO: Semántica de "Mercados de Origen"
+    st.subheader("Mercados de Origen Recomendados")
     for nombre, score in ranked[:2]:
         st.write(f"**{nombre}** — Puntuación: {score:.1f}/500")
         st.caption(f"Nivel de confianza: {int(score/500*100)} %")
 
 
 def render_canvas(subquestions: Dict[str, List[str]]) -> None:
-    st.subheader("Diagnóstico Inicial (Canvas)")
+    # CAMBIO: Diagnóstico enfocado en capacidad de reclutamiento
+    st.subheader("Diagnóstico de Capacidad de Reclutamiento")
     for root, subs in subquestions.items():
         with st.expander(root):
             for i, sq in enumerate(subs, start=1):
@@ -74,7 +80,8 @@ def render_reasoning_graph(subquestions: Dict[str, List[str]]) -> None:
 
 def render_adaptations(adaptations: Dict[str, List[str]]) -> None:
     """Muestra las recomendaciones de adaptación."""
-    st.subheader("Recomendaciones de Adaptación")
+    # CAMBIO: Título más académico
+    st.subheader("Recomendaciones de Adaptación Académica")
     for root, recs in adaptations.items():
         with st.expander(f"Ajustes para «{root}»"):
             for i, r in enumerate(recs, start=1):
@@ -86,7 +93,8 @@ def render_expansion_plan(plan: str) -> None:
     Muestra el plan faseado de entrada a mercados como markdown,
     filtrando líneas vacías o que solo contengan viñetas.
     """
-    st.subheader("Plan de Implementación y Escalado")
+    # CAMBIO: Plan de Reclutamiento en lugar de Escalado comercial
+    st.subheader("Plan de Reclutamiento y Promoción")
     lines = plan.splitlines()
     clean: List[str] = []
     for ln in lines:
