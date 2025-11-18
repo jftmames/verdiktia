@@ -26,18 +26,30 @@ def get_countries(year: int = 2024) -> List[Dict]:
     df_visa = visa.fetch_indicators(["facilidad_visado", "afinidad_idioma"], year)
 
     # 4) Merge progresivo por ISO (Left join partiendo de la lista de estudiantes UNESCO)
+    
+    # CRÍTICO: Renombramos 'nombre' de WB para evitar conflictos con 'nombre_unesco'
+    df_eco = df_eco.rename(columns={'nombre': 'nombre_wb'})
+    
+    # Merge 1: UNESCO (izquierda, contiene 'nombre_unesco') + WB (derecha)
     df = df_student.merge(df_eco, on="iso", how="left")
+    
+    # Merge 2: Resultado + Visados
     df = df.merge(df_visa, on="iso", how="left")
     
-    # Rellenar valores nulos
-    df = df.fillna(0)
+    # --- Gestión del nombre final y valores nulos ---
+    
+    # Creamos una columna 'nombre' unificada, priorizando el nombre de WB si existe, sino usando el de UNESCO.
+    df['nombre'] = df['nombre_wb'].fillna(df['nombre_unesco'])
+    
+    # Identificar columnas numéricas para rellenar con 0
+    numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
+    
+    # Rellenar solo valores numéricos nulos con 0
+    df[numeric_cols] = df[numeric_cols].fillna(0)
+    
+    # Asegurarnos de que el nombre tampoco sea nulo (usando una string vacía como fallback)
+    df['nombre'] = df['nombre'].fillna("")
 
-    # Gestión del nombre del país (priorizamos el nombre en español de WB si existe)
-    if "nombre" not in df.columns and "nombre_unesco" in df.columns:
-        df["nombre"] = df["nombre_unesco"]
-    elif "nombre" in df.columns:
-        # Si hay huecos en 'nombre' de WB, usamos el de Unesco
-        df["nombre"] = df["nombre"].fillna(df.get("nombre_unesco", ""))
 
     # 5) Genera la lista de dicts en el formato esperado por logic.py
     countries = []
