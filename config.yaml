@@ -1,8 +1,9 @@
+# config.yaml modificado
 weights:
-  crecimiento: 25
-  saturacion: 20
-  aranceles: 20
-  logistica: 15
-  cultural: 10
-  certificados: 5
-  idioma: 5
+  demografia_joven: 25      # Volumen de población en edad universitaria
+  poder_adquisitivo: 20     # Capacidad para pagar matrícula/vida en Madrid
+  afinidad_idioma: 15       # Nivel de español (o inglés si el grado es bilingüe)
+  facilidad_visado: 15      # Dificultad burocrática para estudiantes NO-UE
+  interes_espana: 10        # Tendencia de búsqueda sobre estudiar en España
+  convenios_existentes: 10  # Si ya hay acuerdos con colegios/unis locales
+  seguridad: 5              # Estabilidad del país origen
